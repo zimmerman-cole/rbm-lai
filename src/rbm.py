@@ -13,12 +13,15 @@ class RBM(BernoulliRBM):
     
     def __init__(
         self, population='?', n_components=256, learning_rate=0.1, batch_size=10, n_iter=10,
-        verbose=0, random_state=None
+        verbose=0, random_state=None, note=''
     ):
         super(RBM, self).__init__(
             n_components, learning_rate, batch_size, n_iter, verbose, random_state
         )
         self.population = population
+        self.note = note
+        msg = "No underscores allowed in 'note' and 'population' arguments."
+        assert ('_' not in note) and ('_' not in population), msg
         
         self.trained = False
         
@@ -185,19 +188,33 @@ class RBM(BernoulliRBM):
             
         # Remove random_state info
         filename = filename[:filename.index('random_state=')] + filename[filename.index('v'):]
-        return filename[4:-1] + '.p'
+        
+        # Remove verbose info
+        i_p = filename.index('_p')
+        i_v = filename[i_p:].index('_v') + i_p
+        filename = filename[:i_v]
+        
+        # Remove note info if empty
+        if self.note == '':
+            i_n = filename.index('_note=')
+            filename = filename[:i_n] + filename[i_n + 6:]
+        else:
+            filename = filename.replace('=', '')
+            
+        return filename[4:] + '.p'
     
     def save(self):
         if not self.trained:
             print(('NOT SAVING %s.' % str(self)) + ' (IT HAS NOT BEEN TRAINED.)')
             return 
-        filepath = 'data/' + self._make_pkl_filename()
+        filepath = 'saved_models/' + self._make_pkl_filename()
     
         f = open(filepath, 'wb')
         pkl.dump(self, f)
         f.close()
     
-    
+        if self.verbose:
+            print('Saved %s' % str(self))
     
     
     
