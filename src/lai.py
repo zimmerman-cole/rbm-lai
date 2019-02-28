@@ -5,6 +5,8 @@ import numpy as np
 import itertools
 from collections import namedtuple
 
+import matplotlib.pyplot as plt
+
 def compute_window_accuracies(imputations, H_valid, window_size, save_path=None, hooks=list()):
     """
     TODO: doc
@@ -37,7 +39,7 @@ def compute_window_accuracies(imputations, H_valid, window_size, save_path=None,
     #   *individual* models
     for col in range(m):
         for p in pops:
-            w_b, w_e = min(0, col-window_size), max(m, col+window_size+1)
+            w_b, w_e = max(0, col-window_size), min(m, col+window_size+1)
             w_size = w_e - w_b
             accs = np.where(H_valid[:, w_b:w_e] == imputations[p][:, w_b:w_e], 1, 0).sum(axis=1)
             accs = accs / w_size
@@ -45,7 +47,7 @@ def compute_window_accuracies(imputations, H_valid, window_size, save_path=None,
             accuracies[p] = np.hstack([accuracies[p], accs.reshape(-1, 1)])
             
         for h in hooks:
-            h(col)
+            h(col, accuracies)
             
     if save_path is not None:
         out = dict()
@@ -83,11 +85,6 @@ def assign_ancestries(accuracies, hooks=[]):
                 p_accs[frozenset({p1, p2})] = max(acc1, acc2)
             
             best_pair = max(p_accs.items(), key=lambda item: item[1])[0]
-            ss = sorted(p_accs.items(), key=lambda item: item[1], reverse=True)
-            ss = [s[1] for s in ss]
-            print(np.mean(ss), np.var(ss))
-            print(ss)
-            input()
             out[i].append(best_pair)
             
         for hook in hooks:

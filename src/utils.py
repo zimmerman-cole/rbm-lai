@@ -1,7 +1,10 @@
 import os
 import pickle as pkl
 
-def load_model(pop='all'):
+from IPython.display import display, clear_output
+from ipywidgets import IntProgress
+
+def load_model(pop='all', min_units=0, min_iter=0):
     to_repl = {
         'bs': 'bs=',
         '_lr': '_lr=',
@@ -22,12 +25,16 @@ def load_model(pop='all'):
             k, v = s.split('=')
             d_out[k] = v
             
-        if d_out['pop'] != 'all' and d_out['pop'] != pop:
+        if (pop != 'all') and (d_out['pop'] != pop):
+            print()
+            continue
+            
+        if int(d_out['nc']) < min_units:
             continue
             
         print('[%d]' % i, d_out)
         
-    choice = int(input('Which file number?'))
+    choice = int(input('Which file number?\n'))
     if choice == '':
         return None
     
@@ -37,3 +44,42 @@ def load_model(pop='all'):
     model = pkl.load(f)
     f.close()
     return model
+
+def progress_bar(mx, generator):
+    prog = IntProgress(value=0, max=mx)
+    display(prog)
+    
+    for g in generator:
+        yield g
+        prog.value += 1
+        
+    prog.close()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+if __name__ == '__main__':
+    pass
